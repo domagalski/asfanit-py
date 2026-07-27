@@ -1,2 +1,2 @@
-# asfanit
+# asfanit (python)
 Various data collection utilities
