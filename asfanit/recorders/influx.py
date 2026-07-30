@@ -85,6 +85,7 @@ class InfluxOptions:
     host: str
     database: str
     token: str
+    retention_period: str | None
 
 
 class InfluxClient:
@@ -145,11 +146,12 @@ class InfluxClient:
 
         return db_name_list
 
-    def _create_database(self, retention_period: str | None) -> bool:
+    def _create_database(self) -> bool:
         logging.info(f"Creating InfluxDB database: {self.database!r}")
         req = {"db": self.database}
-        if retention_period:
-            req["retention_period"] = retention_period
+        if self._options.retention_period:
+            logging.info(f"Database retention period: {self._options.retention_period}")
+            req["retention_period"] = self._options.retention_period
         resp = requests.post(
             f"{self._options.host}/api/v3/configure/database",
             headers={
@@ -161,7 +163,7 @@ class InfluxClient:
         resp.raise_for_status()
         return True
 
-    def init_database(self, retention_period: str | None = None) -> bool:
+    def init_database(self) -> bool:
         """Initialize a database in InfluxDB."""
         db_name_list = self._get_database_names()
         if db_name_list is None:
@@ -172,7 +174,6 @@ class InfluxClient:
         else:
             if not self._run_request(
                 self._create_database,
-                retention_period,
                 default_return_value=False,
             ):
                 logging.error(f"Cannot create InfluxDB database: {self.database}")
@@ -268,7 +269,6 @@ def cli_builder(
     def _cli_options(func: Callable[..., Any]) -> Callable[..., Any]:
         @click.option(
             "--influx-host",
-            "-H",
             required=influx_host is None,
             default=influx_host,
             type=str,
@@ -276,7 +276,6 @@ def cli_builder(
         )
         @click.option(
             "--influx-database",
-            "-d",
             required=influx_database is None,
             default=influx_database,
             type=str,
@@ -284,10 +283,14 @@ def cli_builder(
         )
         @click.option(
             "--influx-token",
-            "-t",
             required=True,
             type=click.Path(exists=True),
             help="The path to the InfluxDB token file",
+        )
+        @click.option(
+            "--influx-retention",
+            default=None,
+            help="The retention period for influxdb data",
         )
         @click.pass_context
         def _wrapper(
@@ -295,11 +298,17 @@ def cli_builder(
             influx_host: str,
             influx_database: str,
             influx_token: str,
+            influx_retention: str | None,
             **kwargs,
         ) -> Any:
             with pathlib.Path(influx_token).open() as f:
                 token = f.read().strip()
-            opts = InfluxOptions(host=influx_host, database=influx_database, token=token)
+            opts = InfluxOptions(
+                host=influx_host,
+                database=influx_database,
+                token=token,
+                retention_period=influx_retention,
+            )
             return ctx.invoke(func, opts, **kwargs)
 
         return _wrapper
@@ -320,7 +329,7 @@ if __name__ == "__main__":
     @cli_builder(influx_database=database)
     def _main(influx_options: InfluxOptions):
         client = InfluxClient(influx_options)
-        while not client.init_database(retention_period="1h"):
+        while not client.init_database():
             time.sleep(1)
 
         while True:

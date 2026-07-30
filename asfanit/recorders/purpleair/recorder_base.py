@@ -37,11 +37,11 @@ class RecoderBase(abc.ABC, Generic[SensorReading]):
         """convert a sensor reading to an InfluxPoint object"""
         ...
 
-    def init_database(self, retention_period: str | None = None) -> bool:
-        return self._client.init_database(retention_period=retention_period)
+    def init_database(self) -> bool:
+        return self._client.init_database()
 
-    def wait_for_database(self, retention_period: str | None = None) -> None:
-        while not self.init_database(retention_period):
+    def wait_for_database(self) -> None:
+        while not self.init_database():
             time.sleep(1)
 
     def record_sensor(self) -> bool:
@@ -60,8 +60,8 @@ class RecoderBase(abc.ABC, Generic[SensorReading]):
         self._client.write_one_point(point)
         return True
 
-    def run_forever(self, loop_interval_s: int, data_retention: str | None = None) -> None:
-        self.wait_for_database(retention_period=data_retention)
+    def run_forever(self, loop_interval_s: int) -> None:
+        self.wait_for_database()
         while True:
             start = time.time()
             if not self.record_sensor():
