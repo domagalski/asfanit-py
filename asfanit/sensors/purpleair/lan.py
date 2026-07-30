@@ -9,6 +9,8 @@ from typing import cast, Any
 from asfanit.sensors.purpleair import measurement_base
 from asfanit.sensors.purpleair import sensor_base
 
+_TIMEOUT = 10
+
 
 class MeasurementLAN(measurement_base.MeasurementBase):
     def _get_average(self, field: str) -> float:
@@ -122,15 +124,17 @@ class SensorLAN(sensor_base.SensorBase):
     http://<IP_ADDRESS>/json?live=true
     """
 
-    def __init__(self, addr: str, port: int | None = None):
+    def __init__(
+        self, addr: str, port: int | None = None, timeout_s: int = sensor_base.DEFAULT_TIMEOUT
+    ):
         """Create a sensor object
 
         Args:
             addr: (str) The IP address to query. Do not include the http://
             port: (int) The TCP port for the IP address.
-            db: Optional database client.
+            timeout_s: (int) the number of seconds before requests time out
         """
-        super().__init__()
+        super().__init__(timeout_s)
         if not re.fullmatch(r"\d+.\d+.\d+.\d+", addr):
             if not re.match(r"^purpleair-\d+", addr.lower()):
                 raise ValueError("addr must be an IP or PurpleAir hostname.")

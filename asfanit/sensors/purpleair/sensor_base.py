@@ -10,19 +10,22 @@ from requests import exceptions as rq_err
 
 from asfanit.sensors.purpleair import measurement_base
 
+DEFAULT_TIMEOUT = 10
+
 
 class SensorBase(abc.ABC):
     """Sensor base class."""
 
     @abc.abstractmethod
-    def __init__(self):
+    def __init__(self, timeout_s: int):
         """Create a sensor object
 
         Args:
-            db: Optional database client.
+            timeout_s: (int) the number of seconds before requests time out
         """
-        self._connected = False
+        self._connected = None
         self._last_measurement_valid = False
+        self._timeout_s = timeout_s
 
     @abc.abstractmethod
     def _construct_url(self, *args, **kwargs) -> str:
@@ -75,10 +78,9 @@ class SensorBase(abc.ABC):
             A string in json format from the sensor
         """
         try:
-            response = requests.get(url, params=self._url_params())
-        except rq_err.ConnectionError as err:
+            response = requests.get(url, params=self._url_params(), timeout=self._timeout_s)
+        except (rq_err.ConnectionError, rq_err.ReadTimeout) as err:
             if self._set_connection_state(False):
-                logging.error("Requests Connection Error:")
                 logging.error(str(err))
             return None
 
@@ -104,11 +106,17 @@ class SensorBase(abc.ABC):
 
     def _set_connection_state(self, state: bool) -> bool:
         """Set the connection state to the sensor and report any changes"""
+        connected = False
         state_changed = False
-        if state and not self._connected:
+        if self._connected is None:
+            state_changed = True
+        else:
+            connected = self._connected
+
+        if state and not connected:
             logging.info(self._regained_connection_msg)
             state_changed = True
-        elif self._connected and not state:
+        elif connected and not state:
             logging.error(self._lost_connection_msg)
             state_changed = True
 
