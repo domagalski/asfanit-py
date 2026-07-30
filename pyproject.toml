@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asfanit"
+description = "Various data collection utilities and scripts"
+license = "MIT"
+authors = [
+    { name = "Rachel Domagalski" },
+]
+requires-python = ">=3.8"
+dynamic = ["version"]
+dependencies = [
+    "aranet4",
+    "coloredlogs",
+    "influxdb3-python",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "ipython",
+    "pre-commit",
+    "pytest",
+]
+
+[tool.setuptools]
+packages = ["asfanit"]
+
+[tool.setuptools_scm]
+# Version is derived from git tags (e.g. v0.1.11 -> 0.1.11).
+# Falls back to a dev-version scheme when no tag is present.
+
+[tool.black]
+line-length = 100
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | old
+  | __pycache__
+)/
+'''
+
+[flake8]
+max-line-length = 100
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | old
+  | __pycache__
+)/
+'''
