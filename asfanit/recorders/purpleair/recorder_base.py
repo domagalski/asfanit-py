@@ -10,6 +10,8 @@ from asfanit.sensors.purpleair import measurement_base
 SensorReading = TypeVar("SensorReading", bound=measurement_base.MeasurementBase)
 
 DATABASE = "purpleair"
+RETENTION = "30d"
+influx_cli_options = influx.cli_builder(influx_database=DATABASE, influx_retention=RETENTION)
 
 _RETRY_TIME_S = 10
 

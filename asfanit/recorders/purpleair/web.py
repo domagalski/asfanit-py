@@ -65,7 +65,7 @@ class RecoderWeb(recorder_base.RecoderBase[web.MeasurementWeb]):
 @click.option(
     "--interval", default=60, type=int, help="Interval (in seconds) to wait between readings"
 )
-@influx.cli_builder(influx_database=recorder_base.DATABASE)
+@recorder_base.influx_cli_options
 def main(influx_options: influx.InfluxOptions, *, api_key: str, sensor_id: int, interval: int):
     with pathlib.Path(api_key).open() as f:
         api_key_str = f.read().strip()

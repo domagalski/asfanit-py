@@ -61,7 +61,7 @@ class RecoderLAN(recorder_base.RecoderBase[lan.MeasurementLAN]):
 @click.option("--ip-address", required=True, type=str, help="IP address of the sensor")
 @click.option("--port", type=int, help="Override the HTTP port of the sensor")
 @click.option("--live", is_flag=True, help="Whether to fetch live data (true) or averages (false)")
-@influx.cli_builder(influx_database=recorder_base.DATABASE)
+@recorder_base.influx_cli_options
 def main(influx_options: influx.InfluxOptions, *, ip_address: str, port: int | None, live: bool):
     utils.setup_logging()
     client = influx.InfluxClient(influx_options)

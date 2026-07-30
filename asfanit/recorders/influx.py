@@ -265,6 +265,7 @@ def cli_builder(
     *,
     influx_host: str = "http://127.0.0.1:8181",
     influx_database: str | None = None,
+    influx_retention: str | None = None,
 ) -> Callable[..., Any]:
     def _cli_options(func: Callable[..., Any]) -> Callable[..., Any]:
         @click.option(
@@ -289,7 +290,8 @@ def cli_builder(
         )
         @click.option(
             "--influx-retention",
-            default=None,
+            required=influx_retention is None,
+            default=influx_retention,
             help="The retention period for influxdb data",
         )
         @click.pass_context
