@@ -125,6 +125,12 @@ class MeasurementBase(abc.ABC):
 
     @property
     @abc.abstractmethod
+    def logging_rate(self) -> int:
+        """Sensor logging rate"""
+        ...
+
+    @property
+    @abc.abstractmethod
     def lat(self) -> float:
         """latitude"""
         ...

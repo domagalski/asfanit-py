@@ -46,12 +46,19 @@ class RecoderBase(abc.ABC, Generic[SensorReading]):
         while not self.init_database():
             time.sleep(1)
 
+    def _read_sensor(self) -> SensorReading | None:
+        return cast(
+            SensorReading | None,
+            self._sensor.read_measurement(*self._sensor_read_args, **self._sensor_read_kwargs),
+        )
+
+    def wait_for_sensor(self) -> SensorReading:
+        while (reading := self._read_sensor()) is None:
+            time.sleep(_RETRY_TIME_S)
+        return reading
+
     def record_sensor(self) -> bool:
-        if (
-            reading := self._sensor.read_measurement(
-                *self._sensor_read_args, **self._sensor_read_kwargs
-            )
-        ) is None:
+        if (reading := self._read_sensor()) is None:
             return False
 
         if (
@@ -62,8 +69,14 @@ class RecoderBase(abc.ABC, Generic[SensorReading]):
         self._client.write_one_point(point)
         return True
 
-    def run_forever(self, loop_interval_s: int) -> None:
+    def run_forever(self) -> None:
         self.wait_for_database()
+
+        loop_interval_s = 0
+        while loop_interval_s == 0:
+            data = self.wait_for_sensor()
+            loop_interval_s = data.logging_rate
+
         while True:
             start = time.time()
             if not self.record_sensor():

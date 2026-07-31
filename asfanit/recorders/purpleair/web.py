@@ -62,11 +62,8 @@ class RecoderWeb(recorder_base.RecoderBase[web.MeasurementWeb]):
 @click.command(context_settings={"show_default": True})
 @click.option("--api-key", required=True, type=click.Path(exists=True), help="Path to the API key")
 @click.option("--sensor-id", required=True, type=int, help="The ID of the PurpleAir sensor")
-@click.option(
-    "--interval", default=60, type=int, help="Interval (in seconds) to wait between readings"
-)
 @recorder_base.influx_cli_options
-def main(influx_options: influx.InfluxOptions, *, api_key: str, sensor_id: int, interval: int):
+def main(influx_options: influx.InfluxOptions, *, api_key: str, sensor_id: int):
     with pathlib.Path(api_key).open() as f:
         api_key_str = f.read().strip()
     utils.setup_logging()
@@ -74,7 +71,7 @@ def main(influx_options: influx.InfluxOptions, *, api_key: str, sensor_id: int, 
     sensor = web.SensorWeb(api_key=api_key_str, sensor_id=sensor_id)
 
     recorder = RecoderWeb(client, sensor, "purpleair")
-    recorder.run_forever(interval)
+    recorder.run_forever()
 
 
 if __name__ == "__main__":

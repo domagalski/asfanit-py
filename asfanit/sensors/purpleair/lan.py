@@ -24,6 +24,10 @@ class MeasurementLAN(measurement_base.MeasurementBase):
         return datetime.datetime.fromisoformat(timestamp).timestamp()
 
     @property
+    def logging_rate(self) -> int:
+        return self.data["loggingrate"]
+
+    @property
     def lat(self) -> float:
         return self.data["lat"]
 

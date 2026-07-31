@@ -68,9 +68,8 @@ def main(influx_options: influx.InfluxOptions, *, ip_address: str, port: int | N
     sensor = lan.SensorLAN(ip_address, port)
 
     measurement_name = "live" if live else "average"
-    interval = 10 if live else 120
     recorder = RecoderLAN(client, sensor, measurement_name, live=live)
-    recorder.run_forever(interval)
+    recorder.run_forever()
 
 
 if __name__ == "__main__":

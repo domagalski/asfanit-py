@@ -19,6 +19,11 @@ class MeasurementWeb(measurement_base.MeasurementBase):
         return float(self.data["last_seen"])
 
     @property
+    def logging_rate(self) -> int:
+        # TODO make this variable
+        return 60
+
+    @property
     def lat(self) -> float:
         return self.data["latitude"]
 
