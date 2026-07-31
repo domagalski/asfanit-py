@@ -10,8 +10,6 @@ from requests import exceptions as rq_err
 
 from asfanit.sensors.purpleair import measurement_base
 
-DEFAULT_TIMEOUT = 10
-
 
 class SensorBase(abc.ABC):
     """Sensor base class."""

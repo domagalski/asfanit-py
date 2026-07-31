@@ -115,9 +115,7 @@ class SensorWeb(sensor_base.SensorBase):
     This uses the JSON API for querying all online sensors.
     """
 
-    def __init__(
-        self, *, api_key: str, sensor_id: int, timeout_s: int = sensor_base.DEFAULT_TIMEOUT
-    ):
+    def __init__(self, *, api_key: str, sensor_id: int, timeout_s: int = 20):
         """Create a web sensor
 
         Args:
