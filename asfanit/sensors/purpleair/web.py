@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 
+import json
+import logging
+import pathlib
+import sys
 from typing import Any
 
+import click
+
+from asfanit import utils
 from asfanit.sensors.purpleair import measurement_base
 from asfanit.sensors.purpleair import sensor_base
 
@@ -152,33 +159,25 @@ class SensorWeb(sensor_base.SensorBase):
         return "Connected: purpleair.com"
 
 
-if __name__ == "__main__":
-    import json
-    import logging
-    import pathlib
-    import sys
-    import click
-    from asfanit import utils
-
+@click.command(context_settings={"show_default": True})
+@click.option("--api-key", required=True, type=click.Path(exists=True), help="Path to the API key")
+@click.option("--sensor-id", required=True, type=int, help="The ID of the PurpleAir sensor")
+def main(*, api_key: str, sensor_id: int):
     utils.setup_logging()
 
-    @click.command(context_settings={"show_default": True})
-    @click.option(
-        "--api-key", required=True, type=click.Path(exists=True), help="Path to the API key"
-    )
-    @click.option("--sensor-id", required=True, type=int, help="The ID of the PurpleAir sensor")
-    def _main(*, api_key: str, sensor_id: int):
-        with pathlib.Path(api_key).open() as f:
-            api_key_str = f.read().strip()
+    with pathlib.Path(api_key).open() as f:
+        api_key_str = f.read().strip()
 
-        sensor = SensorWeb(api_key=api_key_str, sensor_id=sensor_id)
-        logging.info(f"Fetching data for sensor: {sensor_id}")
-        if (measurement := sensor.read_measurement()) is None:
-            logging.critical("Failed to read sensor")
-            sys.exit(1)
+    sensor = SensorWeb(api_key=api_key_str, sensor_id=sensor_id)
+    logging.info(f"Fetching data for sensor: {sensor_id}")
+    if (measurement := sensor.read_measurement()) is None:
+        logging.critical("Failed to read sensor")
+        sys.exit(1)
 
-        measurement_json = json.dumps(measurement.data, indent=4)
-        logging.info(f"Sensor data:\n{measurement_json}")
-        logging.info(f"AQI: {measurement.pm2_5_aqi_epa}")
+    measurement_json = json.dumps(measurement.data, indent=4)
+    logging.info(f"Sensor data:\n{measurement_json}")
+    logging.info(f"AQI: {measurement.pm2_5_aqi_epa}")
 
-    _main()
+
+if __name__ == "__main__":
+    main()

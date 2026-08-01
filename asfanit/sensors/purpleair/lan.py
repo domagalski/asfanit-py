@@ -3,9 +3,15 @@
 """Read PurpleAir sensor data on a LAN"""
 
 import datetime
+import json
+import logging
 import re
+import sys
 from typing import cast, Any
 
+import click
+
+from asfanit import utils
 from asfanit.sensors.purpleair import measurement_base
 from asfanit.sensors.purpleair import sensor_base
 
@@ -195,30 +201,23 @@ class SensorLAN(sensor_base.SensorBase):
         return super().query_sensor(live=live)
 
 
-if __name__ == "__main__":
-    import json
-    import logging
-    import sys
-    import click
-    from asfanit import utils
-
+@click.command(context_settings={"show_default": True})
+@click.option("--ip-address", required=True, type=str, help="IP address of the sensor")
+@click.option("--port", type=int, help="Override the HTTP port of the sensor")
+@click.option("--live", is_flag=True, help="Whether to fetch live data (true) or averages (false)")
+def main(*, ip_address: str, port: int | None, live: bool):
     utils.setup_logging()
 
-    @click.command(context_settings={"show_default": True})
-    @click.option("--ip-address", required=True, type=str, help="IP address of the sensor")
-    @click.option("--port", type=int, help="Override the HTTP port of the sensor")
-    @click.option(
-        "--live", is_flag=True, help="Whether to fetch live data (true) or averages (false)"
-    )
-    def _main(*, ip_address: str, port: int | None, live: bool):
-        sensor = SensorLAN(ip_address, port)
-        logging.info("Fetching local sensor data")
-        if (measurement := sensor.read_measurement(live=live)) is None:
-            logging.critical("Failed to read local sensor")
-            sys.exit(1)
+    sensor = SensorLAN(ip_address, port)
+    logging.info("Fetching local sensor data")
+    if (measurement := sensor.read_measurement(live=live)) is None:
+        logging.critical("Failed to read local sensor")
+        sys.exit(1)
 
-        measurement_json = json.dumps(measurement.data, indent=4)
-        logging.info(f"Sensor data:\n{measurement_json}")
-        logging.info(f"AQI: {measurement.pm2_5_aqi_epa}")
+    measurement_json = json.dumps(measurement.data, indent=4)
+    logging.info(f"Sensor data:\n{measurement_json}")
+    logging.info(f"AQI: {measurement.pm2_5_aqi_epa}")
 
-    _main()
+
+if __name__ == "__main__":
+    main()
