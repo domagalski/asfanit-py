@@ -18,6 +18,7 @@ dependencies = [
     "coloredlogs",
     "influxdb3-python",
     "requests",
+    "PyYAML",
 ]
 
 [project.optional-dependencies]
