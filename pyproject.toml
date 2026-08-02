@@ -9,10 +9,12 @@ license = "MIT"
 authors = [
     { name = "Rachel Domagalski" },
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = [
     "aranet4",
+    "bleak",
+    "click",
     "coloredlogs",
     "influxdb3-python",
     "requests",
@@ -30,8 +32,12 @@ dev = [
 [project.scripts]
 asfanit = "asfanit:cli"
 
-[tool.setuptools]
-packages = ["asfanit"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["asfanit*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]
 
 [tool.setuptools_scm]
 # Version is derived from git tags (e.g. v0.1.11 -> 0.1.11).
