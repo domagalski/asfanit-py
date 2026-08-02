@@ -90,7 +90,7 @@ def _load_config(config_path: pathlib.Path) -> dict[str, str | None]:
     "--scan-config",
     required=True,
     type=click.Path(exists=True),
-    help="IP address of the sensor",
+    help="Path to the config of which devices to scan and record",
 )
 @influx.cli_builder(influx_database=DATABASE, influx_retention=RETENTION)
 def main(influx_options: influx.InfluxOptions, *, scan_config: str):
@@ -100,9 +100,6 @@ def main(influx_options: influx.InfluxOptions, *, scan_config: str):
     recorder = AranetRecorder(client, sensor)
     asyncio.run(recorder.run_forever())
 
-
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()
